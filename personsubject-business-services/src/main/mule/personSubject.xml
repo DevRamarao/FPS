@@ -85,7 +85,7 @@ payload.results]]></ee:set-variable>
 		</ee:transform>
 		<choice doc:name="Choice" doc:id="cf3afcc5-e037-4377-86ac-ca32caab65ef" tracking:enable-default-events="true">
 			<when expression="#[isEmpty(vars.personSubjectResp)]">
-				<logger level="DEBUG" doc:name="Logger" doc:id="d5ebbd23-74bd-41c2-9ea2-29c79bfe1834" category="global.meus" message="payload is Empty"/>
+				<logger level="DEBUG" doc:name="Logger" doc:id="d5ebbd23-74bd-41c2-9ea2-29c79bfe1834" category="global.meus" message="payload is Empty SO"/>
 				<set-payload value='#[""]' doc:name="Set Payload" doc:id="c57376d5-22eb-4a33-86f9-640fd26a3c77" />
 				<set-variable value="#[404]" doc:name="set http response" doc:id="fe332efd-2abc-4ee1-a6ef-b4faa54d828d" variableName="resultInfoHTTPStatus"/>
 				<ee:transform doc:name="create response" doc:id="a9da8324-fd3a-4504-8b1c-db5e98d3e9c5">
