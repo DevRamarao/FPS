@@ -1,0 +1,20 @@
+#%RAML 1.0 DataType
+displayName: Person Subject
+type: object
+properties:
+  surName:
+    description: surName
+    required: false
+    type: string
+  restOfName:
+    description: Since many people from around the world have multiple names, we simply capture the surname and rest of name.
+    required: false
+    type: string
+  startDate:
+    description: start date for this name (people names change by legal order, marriage, etc.
+    required: false
+    type: date-only | nil
+  endDate: 
+    description: end date for this name (people names change by legal order, marriage, etc.
+    required: false
+    type: date-only | nil

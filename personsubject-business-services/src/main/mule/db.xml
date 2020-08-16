@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<flow name="dbSelect" doc:id="54434443-cbf0-4162-ba44-b9b8da848e39" >
+		<logger level="INFO" doc:name="Logger" doc:id="f6c8c616-6045-44db-9283-8b22fc72eb0d" message='flow.name] started correlation:#[correlationId default ""]   &lt;&lt;&lt;&lt;&lt;&lt;#[payload]' category="global.meus" />
+		<until-successful doc:name="Until Successful" doc:id="bd80786e-881d-4ccf-bc41-30b612420be4" millisBetweenRetries="${db.retryMillis}" maxRetries="${db.retryCount}">
+			<http:request method="POST" doc:name="Request" doc:id="0f9f592a-b43c-41df-adfc-4080bc157a21" outputMimeType="application/json" path="${db.url.path}" sendCorrelationId="ALWAYS" sendBodyMode="ALWAYS" requestStreamingMode="ALWAYS" config-ref="HTTP_DB_configuration">
+				<http:headers><![CDATA[#[output application/java
+---
+{
+	"Content-Type" : "application/x-www-form-urlencoded"
+}]]]></http:headers>
+			</http:request>
+		</until-successful>
+		<logger level="DEBUG" doc:name="Logger" doc:id="efe09ca6-129f-4c58-af73-b7bdcb8af3de" message='flow.name] Ended correlation:#[correlationId default ""]    #[payload]' category="global.meus"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="761ff276-607a-44d7-82d7-f0b5234e26fc" type="ANY">
+				<logger level="DEBUG" doc:name="Logger" doc:id="7f0a1504-6a4c-4dd4-bde0-ca74ead49312" message="Error in #[flow.name] with error #[error.detailedDescription]" category="global.meus"/>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<sub-flow name="dbCRUD" doc:id="0f8a9ec3-2c6a-420b-8713-7da7a4dfb9a6" >
+		<logger level="INFO" doc:name="Logger" doc:id="c9ad3ee4-ced1-487a-ac77-cac3427e1e03" message="#[payload]"/>
+		<until-successful maxRetries="${db.retryCount}" doc:name="Until Successful" doc:id="2b797abd-a786-4e50-ad16-1cd73318fae6" millisBetweenRetries="${db.retryMillis}">
+			<http:request method="POST" doc:name="Request - CRUD" doc:id="c6649ec1-317c-497f-9c49-865415f2dea4" config-ref="HTTP_DB_configuration" path="${db.url.path}" />
+		</until-successful>
+		<logger level="INFO" doc:name="Logger" doc:id="0ed49098-168e-4d6e-a2e0-20d364f6e11b" message="#[payload]" />
+	</sub-flow>
+</mule>

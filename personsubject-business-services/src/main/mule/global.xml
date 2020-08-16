@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mulexmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	
+xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+		xmlns:kafka="http://www.mulesoft.org/schema/mule/kafka"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:tls="http://www.mulesoft.org/schema/mule/tls"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/kafka http://www.mulesoft.org/schema/mule/kafka/current/mule-kafka.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd">
+	<tls:context name="TLS_Context" doc:name="TLS Context"
+		doc:id="1df75b68-e566-4ac5-aa9e-e8caf5db292d">
+		<tls:key-store type="jks"
+			path="${api.certificate.keystore}"
+			keyPassword="${secure::api.certificate.key_pwd}"
+			password="${secure::api.certificate.store_pwd}" />
+	</tls:context>
+	<configuration-properties
+		doc:name="Configuration properties"
+		doc:id="4c2dcb7f-7c00-4624-bf31-2653512b1a7b"
+		file="application.properties" />
+	<global-property doc:name="Global Property"
+		doc:id="7f92979e-2859-4aa2-a322-29e5cca7ce29" name="env" value="local" />
+	<secure-properties:config
+		name="Secure_Properties_Config_common"
+		doc:name="Secure Properties Config"
+		doc:id="b5db6c28-20f4-4dbb-8e4f-cf730b98117e"
+		file="application.properties" key="${secure.properties.key}">
+		<secure-properties:encrypt
+			algorithm="Blowfish" />
+	</secure-properties:config>
+	<global-property doc:name="Global Property"
+		doc:id="428c61e2-b35c-4725-be1d-46d128414bf6"
+		name="secure.properties.key" value="aPRHPhKjYwr4XqNa" />
+	<configuration doc:name="Configuration"
+		doc:id="264111db-73a2-480b-b334-b8a08ddb910a"
+		defaultErrorHandler-ref="globalError_Handler" />
+	<http:request-config name="HTTP_DB_configuration" doc:name="HTTP Request configuration" doc:id="7e618d80-550f-42ce-a282-960864026e6d" >
+		<http:request-connection host="${db.host}" port="${db.port}" >
+			<http:authentication >
+				<http:basic-authentication username="${secure::db.user}" password="${secure::db.password}" />
+			</http:authentication>
+		</http:request-connection>
+	</http:request-config>
+	<http:request-config
+		name="HTTPS_Request_Support_System_configuration"
+		doc:name="HTTP Request configuration"
+		doc:id="637dd0cc-c501-42de-873a-b4e81824d000">
+		<http:request-connection protocol="HTTPS"
+			host="${support-ticket-system-service.host}"
+			port="${support-ticket-system-service.port}">
+			<tls:context>
+				<tls:trust-store insecure="true" />
+			</tls:context>
+		</http:request-connection>
+	</http:request-config>
+	<http:request-config name="Media_HTTPS_Request_configuration" doc:name="HTTP Request configuration" doc:id="cfa3fb27-efac-471c-9ac6-1668d77689cb" >
+		<http:request-connection protocol="HTTPS"/>
+	</http:request-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="2247bd21-ef68-48ea-8eef-04473a8cdc62" file="application.local.properties" />
+	<secure-properties:config name="Secure_Properties_Config1_local" doc:name="Secure Properties Config" doc:id="87f9d567-6303-44b2-83e7-d9b3f4c29639" file="application.local.properties" key="${secure.properties.key}" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="d9daa05d-a6fd-4e80-8a28-b26fc66e2b3d" file="application.dev.properties" />
+	<secure-properties:config name="Secure_Properties_Config_dev" doc:name="Secure Properties Config" doc:id="3947da4f-9123-4860-bb32-210563acb19c" file="application.dev.properties" key="${secure.properties.key}" >
+		<secure-properties:encrypt algorithm="Blowfish" />
+	</secure-properties:config>
+	<vm:config name="kafka_VM_Configure" doc:name="VM Config" doc:id="6b5d7adc-c22c-4368-b449-489e55218277" sendCorrelationId="ALWAYS">
+		<vm:connection />
+		<vm:queues >
+			<vm:queue queueName="personSubject_incoming" />
+		</vm:queues>
+	</vm:config>
+	<kafka:kafka-producer-config name="Apache_Kafka_Producer_configuration" doc:name="Apache Kafka Producer configuration" doc:id="e8c0e754-7030-496a-8fcd-80df5826cdca" >
+		<kafka:basic-kafka-producer-connection bootstrapServers="${kafka.bootstrapserver}" >
+			<kafka:additional-properties >
+				<kafka:additional-property key="security.protocol" value="${security.protocol}" />
+				<kafka:additional-property key="sasl.jaas.config" value="${sasl.jaas.config}" />
+				<kafka:additional-property key="ssl.endpoint.identification.algorithm" value="${ssl.endpoint.identification.algorithm}" />
+				<kafka:additional-property key="sasl.mechanism" value="${sasl.mechanism}" />
+			</kafka:additional-properties>
+		</kafka:basic-kafka-producer-connection>
+	</kafka:kafka-producer-config>
+	<kafka:kafka-consumer-config name="Apache_Kafka_Consumer_configuration" doc:name="Apache Kafka Consumer configuration" doc:id="45b4f8f6-c4eb-4df3-9e42-21b6a51bd2d9" >
+		<kafka:basic-kafka-consumer-connection groupId="${consumerGroup}" bootstrapServers="${kafka.bootstrapserver}" >
+			<kafka:additional-properties >
+				<kafka:additional-property key="security.protocol" value="${security.protocol}" />
+				<kafka:additional-property key="sasl.jaas.config" value="${sasl.jaas.config}" />
+				<kafka:additional-property key="ssl.endpoint.identification.algorithm" value="${ssl.endpoint.identification.algorithm}" />
+				<kafka:additional-property key="sasl.mechanism" value="${sasl.mechanism}" />
+			</kafka:additional-properties>
+		</kafka:basic-kafka-consumer-connection>
+	</kafka:kafka-consumer-config>
+	<http:request-config name="Moderation_HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="431e64f4-83ef-418e-a5a1-cd31a5d4ab23" >
+		<http:request-connection protocol="HTTPS" host="${https.moderation.host}" />
+	</http:request-config>
+	<flow name="support-ticket-globalFlow"
+		doc:id="df33e3d8-68a0-4567-8154-487046f6b4cf">
+		<logger level="DEBUG" doc:name="Log start"
+			doc:id="60e51846-f9de-447b-85be-4a19540256cc"
+			message='#[flow.name] started correlation:#[correlationId default ""]]'
+			category="global.meus" />
+		<logger level="ERROR" doc:name="Log Error"
+			doc:id="6e780c8d-d9ea-4f9e-b4d6-ca91ab55b3fb"
+			message="message is #[vars.resultInfoMessage] and the Error is #[error.description]" />
+		<ee:transform
+			doc:name="Transform Message - set error message"
+			doc:id="a39fd9c9-429d-4dd3-8d42-71fe72c80874">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0
+output application/java
+---
+"correlation:" ++ vars.correlationId as String default ""  
+ ++ " "
+ ++ "errorType:" 
+ ++ vars.resultInfoErrorType as String default ""
+ ++ " " ++ vars.resultInfoMessage as String default ""]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Create support service request"
+			doc:id="dca7d994-20e9-4bb9-ad4e-af282dae7d8c">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"requestorName": p('service.name') default "missingRequestorName",     
+	"resultInfoRequestorResource": vars.resultInforesultInfoRequestorResource default "missingresultInfoRequestorResource",                                                                  
+	 "recipients":[  
+      {  
+         "email": p('support-ticket-system-service.email'),
+         "type":"TO"
+      },
+      {  
+         "email": p('support-ticket-system-service.cc'),
+         "type":"CC"
+      }
+   ],
+	"errorCode": vars.resultInfoReturnStatusCode default "000",
+	"impact": vars.resultInfoImpact default "1",
+	"urgency": vars.resultInfoUrgency default "1",
+	"assignmentGroup": vars.resultInfoAssignmentGroup default p('support-ticket-system-service.assignmentGroup'),
+	"shortDescription": vars.resultInfoMessage[0 to 160] default "" ,                                                                    
+	"comments": vars.resultInfoMessage[0 to 4000] default ""
+	}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="DEBUG" doc:name="Log Request"
+			doc:id="a88065d7-d8da-4a3c-93ef-85ba464a4cf3"
+			message="#[flow.name] Request to support service is #[payload] ." />
+		<until-successful maxRetries="${support-ticket.millisecondretry}"
+			doc:name="Until Successful"
+			doc:id="1f252e4f-9dd9-45ad-a247-c12b689c339d"
+			millisBetweenRetries="${support-ticket.millisecondretry}">
+			<http:request method="POST" doc:name="Support service"
+				doc:id="5a991a74-5c37-4ea9-8d46-8c824555208b"
+				config-ref="HTTPS_Request_Support_System_configuration"
+				path="${support-ticket-system-service.basePath}"
+				sendCorrelationId="ALWAYS" />
+		</until-successful>
+		<logger level="DEBUG" doc:name="Log end"
+			doc:id="e63299f1-6115-4f33-80b8-324fc8b89258"
+			message="#[flow.name] ended" />
+		<error-handler>
+			<on-error-continue enableNotifications="true"
+				logException="true" doc:name="On Error Continue"
+				doc:id="62107c8a-3c3a-4d91-8764-b2b08d31db49" type="ANY">
+				<logger level="ERROR" doc:name="Logger"
+					doc:id="ace39043-7db0-4b9c-b913-ce4a211c34ba" message='#[%dw 2.0
+output application/java
+---
+"Unable to open Support Ticket DueTo: " ++ " - "  ++ if (null == error.exception default "") " No exception information available."  else error.description default ""]'
+					category="global.meus" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<sub-flow name="set-http-response-statusCode"
+		doc:id="f034ae97-ce26-4f3e-8364-7c48df05e878">
+		<set-variable variableName="httpStatus"
+			value="#[vars.resultInfoHTTPStatus]" doc:name="Set status code" />
+	</sub-flow>
+	<sub-flow name="set-response-payload"
+		doc:id="4af6e11d-5d5d-4c36-add8-5814f4d4f6c3">
+		<ee:transform doc:name="Transform Message"
+			doc:id="65dab778-6de9-4ea4-bdfd-f58605bc9c79">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{ 
+   statusCode : vars.resultInfoReturnStatusCode,
+   message: vars.resultInfoReturnStatusDescription
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+	<error-handler name="globalError_Handler"
+		doc:id="5571d613-fd5c-4ccd-9066-223dae99b396">
+		<on-error-continue enableNotifications="true"
+			logException="true" doc:name="On Error Continue"
+			doc:id="8a489721-c707-41bd-a6e2-bf830e5bef3f">
+<ee:transform doc:name="Update resultInfo" doc:id="889b3ac0-66ab-46bc-8a15-9927daaa0aae" >
+			<ee:message >
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 500]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "Technical"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoImpact"><![CDATA[%dw 2.0 output application/java --- "high"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoUrgency"><![CDATA[%dw 2.0 output application/java --- "high"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0 output application/java ---"Unable to process request."]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0 output application/java --- "Global Error Handler: correlation:" ++ correlationId as String default "" ++ " " ++  if (null == error.exception default "") " No exception information available."  else error.description default ""
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+			<flow-ref doc:name="support-ticket-globalFlow"
+				doc:id="e3cd299b-2901-42aa-9f50-aa266890901f"
+				name="support-ticket-globalFlow" />
+			<flow-ref doc:name="set-http-response-statusCode" doc:id="6e9cc777-b88f-4791-b5a5-37372e23b8a0" name="set-http-response-statusCode"/>
+			<flow-ref doc:name="set-response-payload"
+				doc:id="9bc4aadd-d0e5-4850-a41c-41de261a397f"
+				name="set-response-payload" />
+		</on-error-continue>
+	</error-handler>
+	<vm:config name="personSubject_VM_configure" doc:name="VM Config" doc:id="6956d13b-fbbb-450a-8655-9b2309c61383" sendCorrelationId="ALWAYS">
+		<vm:connection >
+			<reconnection failsDeployment="true" >
+				<reconnect-forever />
+			</reconnection>
+		</vm:connection>
+		<vm:queues >
+			<vm:queue queueName="post_personSubject_Q"/>
+			<vm:queue queueName="put_personSubject_Q"/>
+		</vm:queues>
+	</vm:config>
+	
+</mule>

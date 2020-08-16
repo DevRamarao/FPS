@@ -1,0 +1,16 @@
+#%RAML 1.0 DataType
+displayName: personSubject  Event
+type: object
+
+
+uses: 
+  eventCommon: exchange_modules/4d719216-50db-44e2-843e-57abe6c12f9d/truenewsshared/3.0.9/libraries/eventCommon.raml
+
+
+properties:
+  eventContext:
+    type: eventCommon.eventContext
+  personSubjectId:
+    required: true
+    type: string
+

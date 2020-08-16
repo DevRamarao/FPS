@@ -1,0 +1,15 @@
+#%RAML 1.0 Library 
+usage: This represents the fields on each table capturing the datetime and user info for a given object.
+types:
+  eventContext:
+    type: object
+    properties:
+      eventName:
+        description: The name of the event (Environment-EntityAction naming)
+        type: string
+      eventId:
+        description: Unique value identifying the event
+        type: string      
+      eventDatetime:
+        type: datetime
+        

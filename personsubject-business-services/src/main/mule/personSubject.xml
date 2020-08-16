@@ -1,0 +1,1219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sockets="http://www.mulesoft.org/schema/mule/sockets"
+	xmlns:kafka="http://www.mulesoft.org/schema/mule/kafka" xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/kafka http://www.mulesoft.org/schema/mule/kafka/current/mule-kafka.xsd
+http://www.mulesoft.org/schema/mule/sockets http://www.mulesoft.org/schema/mule/sockets/current/mule-sockets.xsd">
+	<flow name="get-personsubject-Flow" doc:id="f31bee77-7173-4497-80bf-f31b309c6cec" >
+		<logger level="DEBUG" doc:name="Log start" doc:id="b38aecd5-5c5d-4cc5-974b-00300ee65540" message='#[flow.name] Started correlation:#[correlationId default ""]]' category="global.meus"/>
+		<ee:transform doc:name="Update ErrorVars" doc:id="9c653e12-3423-4b52-89b6-9f64b250ab98">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0
+output application/java
+--- 
+"get-personSubject-api" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0
+output application/java
+---
+"Failed to get records from Couchbase"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0
+output application/java
+---
+ "Unable to process request."]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoUrgency"><![CDATA[%dw 2.0
+output application/java --- "low"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoImpact "><![CDATA[%dw 2.0
+output application/java --- "medium"
+]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoErrorType"><![CDATA[%dw 2.0
+output application/java --- "Technical"
+]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusCode "><![CDATA[%dw 2.0
+output application/java --- 104
+]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0
+output application/java --- 500
+]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="personSubject" doc:id="f5cd3a94-39d0-46cc-9e24-db9799cedcb5">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/x-www-form-urlencoded
+---
+{
+	"statement" : "SELECT * FROM  " ++ p('db.bucket') ++  
+	" WHERE kind = '"++ p('db.kind') ++"' and kindVersion = '"++ p('db.kindVersion') ++"'"++
+    (if ((attributes.queryParams.'status' != null) and (attributes.queryParams.'status' != '')and (attributes.queryParams.'status' != 'all')) ((" and status = '") ++ (attributes.queryParams.'status') ++ ("'")) else ("")) 
+   
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Update resultInfo" doc:id="fc2db661-20dc-4acc-aef8-378e33722a3f">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "get-personSubject-api" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "104" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "Technical"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoImpact"><![CDATA[%dw 2.0 output application/java --- "medium"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoUrgency"><![CDATA[%dw 2.0 output application/java --- "low"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0 output application/java ---"Unable to process request."]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0 output application/java --- "Unable to create query"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 400]]></ee:set-variable>
+
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="Execute select" doc:id="cb72eb07-ea2e-41ae-ba08-eef761e64ede" name="dbSelect"/>
+		<ee:transform doc:name="personSubjectResp" doc:id="c1e05881-c7e8-4156-a2f9-d6ba26e5a548" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="personSubjectResp" ><![CDATA[%dw 2.0
+output application/json
+---
+payload.results]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="cf3afcc5-e037-4377-86ac-ca32caab65ef" tracking:enable-default-events="true">
+			<when expression="#[isEmpty(vars.personSubjectResp)]">
+				<logger level="DEBUG" doc:name="Logger" doc:id="d5ebbd23-74bd-41c2-9ea2-29c79bfe1834" category="global.meus" message="payload is Empty"/>
+				<set-payload value='#[""]' doc:name="Set Payload" doc:id="c57376d5-22eb-4a33-86f9-640fd26a3c77" />
+				<set-variable value="#[404]" doc:name="set http response" doc:id="fe332efd-2abc-4ee1-a6ef-b4faa54d828d" variableName="resultInfoHTTPStatus"/>
+				<ee:transform doc:name="create response" doc:id="a9da8324-fd3a-4504-8b1c-db5e98d3e9c5">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+ message: " No personSubject record existed "	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="8345f3eb-d9b3-42fe-8508-0c33162b0268">
+					<ee:message>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="createResponse" ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="Flow Reference-get-mediaFlow" doc:id="08c4f152-7263-4c9f-b5b1-e0e2e4f6faf2" name="get-media-Flow" />
+				<ee:transform doc:name="update resultinfo" doc:id="f84e8d81-b7bf-4379-89ab-34fb6c5ae345">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "get-personSubject-api" ]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "213" ]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "Technical"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoImpact"><![CDATA[%dw 2.0 output application/java --- "medium"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoUrgency"><![CDATA[%dw 2.0 output application/java --- "low"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0 output application/java ---"Unable to process request."]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0 output application/java --- "Failed to transform response"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 500]]></ee:set-variable>
+
+					</ee:variables>
+				</ee:transform>
+				<ee:transform doc:name="DB payload" doc:id="b3976d17-1867-411d-91a4-b343fa0c0313" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+personSubjectGet1: vars.createResponse.results[p('db.bucket')] map (item1, value) -> {
+	personSubjectId: item1.personSubjectId,
+	mediaId: item1.mediaId,
+	status: item1.status,
+	description: item1.description,
+	datetimeCreated: item1.datetimeCreated,
+	datetimeModified: item1.datetimeModified,
+	contentURL: vars.mediaPayload.contentURL,
+	languageCode: item1.languageCode,
+	languageName: item1.languageName,
+	personNameElement: item1.personNameElement map (item2,index) -> {
+		personNameElementId: item2.personNameElementId,
+		surName: item2.surName,
+		restOfName: item2.restOfName,
+		startDate: item2.startDate,
+		endDate: item2.endDate
+	}
+}
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="#[200]" doc:name="set http response" doc:id="4fdd613b-9796-415d-b84f-7d1b55cf7894" variableName="resultInfoHTTPStatus"/>
+			</otherwise>
+		</choice>
+		<flow-ref doc:name="Flow Reference - set http return status" doc:id="c1c02320-ca1c-49f9-bb89-454d20d66d63" name="set-http-response-statusCode" />
+		<logger level="DEBUG" doc:name="Log End" doc:id="e553dfed-1682-4c95-9c3d-c53092cadad0" message="#[flow.name] Ended." category="global.meus"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="244225f5-de43-44dd-a2bd-95c4cf9fc45b" type="ANY">
+				<logger level="ERROR" doc:name="Logger" doc:id="0810022e-3cb9-4908-b234-5e0efbe431c4" message="exception occured and creating support ticket  " category="global.personSubject"/>
+				<ee:transform doc:name="update resultInfo" doc:id="9bfba9b9-9a14-4612-ba1d-eb9317a62808" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+ vars.resultInfoMessage default "" ++ " - "  ++ if (null == error.exception default "") " No exception information available."  else error.description default "" ]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<flow-ref doc:name="support-ticket-globalFlow" doc:id="cbcfefb7-8da5-46f4-9bd4-95f2adbc3a97" name="support-ticket-globalFlow"/>
+				<flow-ref doc:name="set-http-response-statusCode" doc:id="62063990-5418-445f-8b5b-8a3bb4b3a3c2" name="set-http-response-statusCode"/>
+				<flow-ref doc:name="set-response-payload" doc:id="dab49666-3758-4d9d-a6a0-c1478427ef42" name="set-response-payload"/>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="get-personSuject-by-Id-Flow" doc:id="d2b6cb59-04e5-4474-8c63-5a9b4a9eef47" >
+		<logger level="DEBUG" doc:name="Log Start" doc:id="c1106582-4386-46f1-8d5d-1c59254995d6" message='#[flow.name] Started correlation:#[correlationId default ""]]' category="global.meus"/>
+		<ee:transform doc:name="Update ErrorVars" doc:id="7a3b2db4-9678-49fd-85f7-c61a3b971fce">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "get-personSubject-api" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "212" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "Technical"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoImpact"><![CDATA[%dw 2.0 output application/java --- "medium"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoUrgency"><![CDATA[%dw 2.0 output application/java --- "low"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0 output application/java ---"Unable to process request."]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0 output application/java --- "Failed to get records from database"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 500]]></ee:set-variable>
+
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="PersonSubject-Id" doc:id="04fbeb4d-eb75-4e24-8e28-943c32104d51" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="personSubjectId" ><![CDATA[attributes.uriParams.'personSubjectId']]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="personSubject Select Query" doc:id="1f321cdd-7ad4-4800-9b07-94a4b447ddf4">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/x-www-form-urlencoded
+---
+{
+	"statement" : "SELECT * FROM  " ++ p('db.bucket') ++  
+	" WHERE kind = '"++ p('db.kind') ++"' and kindVersion = '"++ p('db.kindVersion') ++"'"++
+    (if ((vars.personSubjectId != null) and (vars.personSubjectId != '')) ((" and personSubjectId = '") ++ (vars.personSubjectId) ++ ("'")) else (""))
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Update resultInfo" doc:id="1bc0dbb6-931f-4c44-956e-0b13461980aa">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "get-pesonSubect-api" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "104" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "Technical"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoImpact"><![CDATA[%dw 2.0 output application/java --- "medium"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoUrgency"><![CDATA[%dw 2.0 output application/java --- "low"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0 output application/java ---"Unable to process request."]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0 output application/java --- "Unable to create query"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 500]]></ee:set-variable>
+
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="Execute select" doc:id="bc54a091-f7cb-4644-9a1c-1ea95bfeeaaa" name="dbSelect" />
+		<ee:transform doc:name="personSubjectResp" doc:id="824d0d0b-0492-44ec-8171-6f5891c6f59e" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="personSubjectResp" ><![CDATA[%dw 2.0
+output application/json
+---
+payload.results]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="eec1c208-e31c-4041-a139-d2d1a682d317">
+			<when expression="#[isEmpty(vars.personSubjectResp)]">
+				<logger level="DEBUG" doc:name="Logger" doc:id="d32196e7-3ad6-4370-85be-1868a55e6912" message="payload is empty" category="global.meus"/>
+				<set-payload value='#[""]' doc:name="Set Payload" doc:id="aae20f29-8dc4-4868-892b-0ddaf54b17f4" />
+				<set-variable value="#[404]" doc:name="set http response" doc:id="a13c9660-26f7-49c9-a613-681d2892a4da" variableName="resultInfoHTTPStatus"/>
+				<ee:transform doc:name="create Responce" doc:id="c637ff0e-f60e-4860-a5ad-24baff92d7c9">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+ message: " No personSubject record existed "	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			
+</when>
+			<otherwise>
+				<ee:transform doc:name="payload" doc:id="4fcfd0e6-e826-4e5a-8411-1ed4b9956612">
+					<ee:message>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="createResponse" ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<ee:transform doc:name="Update error vars" doc:id="ef86e2e4-4c32-4d4d-bee4-e265acf155b7">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "get-personSubject-api" ]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "213" ]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "Technical"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoImpact"><![CDATA[%dw 2.0 output application/java --- "medium"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoUrgency"><![CDATA[%dw 2.0 output application/java --- "low"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0 output application/java ---"Unable to process request."]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0 output application/java --- "Failed to transform response"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 500]]></ee:set-variable>
+
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="Flow Reference-get-mediaFlow" doc:id="6949aa87-9f31-418d-bc16-ad0665acc152" name="get-media-Flow" />
+				<ee:transform doc:name="DB payload" doc:id="a17f06d8-5abc-4bf3-90f5-2d6859d5aa81">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+personSubjectGet1: vars.createResponse.results[p('db.bucket')] map (item1, value) -> {
+	personSubjectId: item1.personSubjectId,
+	mediaId: item1.mediaId,
+	contentURL: vars.mediaPayload.contentURL,
+	status: item1.status,
+	description: item1.description,
+	datetimeCreated: item1.datetimeCreated,
+	datetimeModified: item1.datetimeModified,
+	languageCode: item1.languageCode,
+	languageName: item1.languageName,
+	personNameElement: item1.personNameElement map (item2,index) -> {
+		personNameElementId: item2.personNameElementId,
+		surName: item2.surName,
+		restOfName: item2.restOfName,
+		startDate: item2.startDate,
+		endDate: item2.endDate
+	}
+}
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="#[200]" doc:name="Set Variable-resultInfoHTTPStatus" doc:id="3ea3cb55-19d4-45bc-96a3-5208f1377e9e" variableName="resultInfoHTTPStatus"/>
+			</otherwise>
+		</choice>
+		<flow-ref doc:name="Flow Reference - set http return status" doc:id="dd81ec26-cc80-4350-9656-343208eef41e" name="set-http-response-statusCode" />
+		<logger level="DEBUG" doc:name="Logger" doc:id="ad5a1527-483b-4d92-85a6-27f1162b4112" message="#[flow.name] Ended." category="global.meus"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="68757d22-4cf8-444f-a742-5cf9398faf48" type="ANY">
+				<logger level="ERROR" doc:name="Logger" doc:id="64e8189c-7b65-4f6c-bf34-2064475e70a2" category="global.meus" message="exception occured and creating support ticket  "/>
+				<ee:transform doc:name="update resultInfo" doc:id="c89bcf10-b2ea-4085-a1fd-60ab5b26bf83" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+vars.resultInfoMessage default "" ++ " - "  ++ if (null == error.exception default "") " No exception information available."  else error.description default "" ]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<flow-ref doc:name="support-ticket-globalFlow" doc:id="97b9672a-c753-4c3f-bb02-06cbda4c9d3a" name="support-ticket-globalFlow"/>
+				<flow-ref doc:name="set-http-response-statusCode" doc:id="8565615d-e6ce-40f1-ab49-b342eccd1a34" name="set-http-response-statusCode"/>
+				<flow-ref doc:name="set-response-payload" doc:id="b493ddcd-a297-41f7-bd39-78a2e22f9408" name="set-response-payload"/>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="post-personSubject-dupe-search-Flow" doc:id="5bfc20fa-0492-4280-bfc6-9c935d678f4e" >
+		<logger level="DEBUG" doc:name="Log start" doc:id="89b4e6a1-3ed3-40f7-acee-f665ded04dba" message='#[flow.name] Started correlation:#[correlationId default ""] #[payload]]' category="global.meus"/>
+		<ee:transform doc:name="Update error vars" doc:id="e3b556e7-b40b-4b21-b622-079511f5fac7">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0 output application/java ---"Duplicate"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0 output application/java --- "Duplicate"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "post-personSubject-api" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 400]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "107" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "Validation"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoImpact"><![CDATA[%dw 2.0 output application/java --- "low"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoUrgency"><![CDATA[%dw 2.0 output application/java --- "low"]]></ee:set-variable>
+
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="newUUID,originalPayload" doc:id="64520e3b-17b3-4dc8-8e52-ab1bbaf0cb33">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="newUUID"><![CDATA[%dw 2.0
+output application/java
+---
+uuid()]]></ee:set-variable>
+				<ee:set-variable variableName="originalPayload"><![CDATA[%dw 2.0
+output application/json
+---
+payload
+	
+	]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="personSubjectpayload" doc:id="85a8e3a9-aaf7-4bda-91a5-40b2d7f36edc">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="personNameElement"><![CDATA[%dw 2.0
+output application/json
+---
+vars.originalPayload.personNameElement[0]
+	
+	]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="create select statement" doc:id="3e4b9510-cc64-4ae9-bd91-1551a893fbcc">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/x-www-form-urlencoded
+---
+{
+	"statement" : "SELECT * FROM  " ++ p('db.bucket') ++  
+	" WHERE kind = '"++ p('db.kind') ++"' "
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="DEBUG" doc:name="Logger" doc:id="993ca55b-fe76-4948-ad75-dcc9ab453a40" message=" #[payload]" category="global.meus"/>
+		<flow-ref doc:name="Flow Reference - check for dupe" doc:id="cf179ef3-ce91-4a52-95ba-efc31fad7cad" name="dbSelect" />
+		<ee:transform doc:name="Transform Message" doc:id="f29cdae2-ff9f-4439-a58e-da59e21da7ef" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="personSubjectResp" ><![CDATA[%dw 2.0
+output application/json
+---
+payload.results]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Result Status" doc:id="38f261ba-f0c8-4b78-8fec-e8759c592191">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var results =payload.results filter (isEmpty($) == false)
+---
+{
+	(payload - 'results'),
+	results: (results flatMap ($.personNameElement filter($.surName == vars.personNameElement.surName and $.restOfName == vars.personNameElement.restOfName))) filter ($ != null)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="4c6f09f2-3279-4ef2-bee9-6698ba2b215e">
+			<when expression="#[isEmpty(payload.results)]">
+				<logger level="DEBUG" doc:name="Not a dupe" doc:id="a53d2296-c2c5-43fe-ad98-4746d15816cb" message="Post: not a dupe, continuing" category="global.meus"/>
+				<ee:transform doc:name="DB payload" doc:id="cc618af3-548d-4ba5-b8c1-2d8b98f990c0">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var PersonNameElement = vars.originalPayload.personNameElement
+---
+{
+	personSubjectId: vars.newUUID,
+	kind: p('db.kind'),
+	kindVersion: p('db.KindVersion'),
+	personNameElement: PersonNameElement map($ ++ {personNameElementId: uuid()})  ,
+    mediaId: vars.originalPayload.mediaId,
+    languageCode:  if(isEmpty(vars.originalPayload.languageCode)) (p('personSubject.languagecode')) else (vars.originalPayload.languageCode),
+    languageName:  if(isEmpty(vars.originalPayload.languageName)) (p('personSubject.languageName')) else (vars.originalPayload.languageName),
+    status: 'pending',
+    datetimeCreated: now(),
+    CreatedUserid: p('db.createduser'),
+     personSubjectDescription: vars.originalPayload.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<ee:transform doc:name="update resultInfo" doc:id="862a025e-aa9b-41bd-bf36-da23fe0fe3c9">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+				<ee:set-variable variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0 output application/java ---"Unable to process request"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0 output application/java --- "Failed to write to VM"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "108" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "Technical"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoImpact"><![CDATA[%dw 2.0 output application/java --- "medium"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 500]]></ee:set-variable>
+
+			</ee:variables>
+				</ee:transform>
+				<vm:publish doc:name="Publish" doc:id="98d8e51d-ced6-465c-868f-d594d264d825" queueName="post_personSubject_Q" sendCorrelationId="ALWAYS" config-ref="personSubject_VM_configure">
+					<reconnect-forever />
+				</vm:publish>
+				<set-variable value="#[200]" doc:name="set http status" doc:id="b1927153-48a5-4d25-b0d9-95bc18a8fc0a" variableName="resultInfoHTTPStatus" />
+				<ee:transform doc:name="created PersonSubjectId" doc:id="84216544-4141-4bde-a292-943cd58128c4">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{ 
+  id: vars.newUUID
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<logger level="DEBUG" doc:name="dupe record" doc:id="1aa764a6-203d-4009-bb3f-dd4998b8cd47" message="Duplicate record on POST found: #[payload]" category="global.meus"/>
+				<ee:transform doc:name="update resultinfo" doc:id="906cb312-22cd-48a2-b9e0-e6e171df1075">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+				<ee:set-variable variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "216" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoImpact"><![CDATA[%dw 2.0 output application/java --- "low"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoUrgency"><![CDATA[%dw 2.0 output application/java --- "low"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0 output application/java ---"Already exists."]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0 output application/java --- "Entity already exists"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 403]]></ee:set-variable>
+			
+</ee:variables>
+				</ee:transform>
+				<set-payload value='#[""]' doc:name="Set Payload" doc:id="809d32f1-e2e3-4874-9200-25aa17e046d4" />
+				<flow-ref doc:name="Flow Reference - set response payload" doc:id="0bb8d601-2df0-480d-9230-b05724ba5705" name="set-response-payload" />
+			</otherwise>
+		</choice>
+		<flow-ref doc:name="Flow Reference - set http return status" doc:id="145d47b4-4fe7-46ed-9a92-0e326d97d51f" name="set-http-response-statusCode" />
+		<logger level="DEBUG" doc:name="Log end" doc:id="e0b54102-4f67-4339-8d2c-9154eb6302ac" message="#[flow.name] Ended." category="global.meus"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true"
+				logException="true" doc:name="On Error Continue"
+				doc:id="5802a061-b1d8-4661-b0c5-1c93ab67af5a" type="ANY">
+				<logger level="ERROR" doc:name="Logger"
+					doc:id="cde457f0-79d0-41e8-a54f-5b7061b61cfc"
+					message="exception occured and creating support ticket  "
+					category="global.meus" />
+				<ee:transform doc:name="update resultInfo"
+					doc:id="00712ae0-2d23-4fb8-aeda-a7df7a18d15f">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0
+output application/java
+---
+vars.resultInfoMessage default "" ++ " - "  ++ if (null == error.exception default "") " No exception information available."  else error.description default "" 
+]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="support-ticket-globalFlow"
+					doc:id="5ec4c3e8-9f98-4579-a511-f8d4c09ce53e"
+					name="support-ticket-globalFlow" />
+				<flow-ref doc:name="set response statusCode"
+					doc:id="90b4f260-0a51-4354-bcff-22b53133ee5e"
+					name="set-http-response-statusCode" />
+				<flow-ref doc:name="set-response-payload"
+					doc:id="e4b5299e-8598-4888-b216-cfc365ea66b9"
+					name="set-response-payload" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="post-personSubject-Flow" doc:id="00e97236-3d25-43ae-8565-b6b8e91f09a0" >
+		<vm:listener doc:name="Listener" doc:id="c29a4d63-ebf4-41ee-84f3-e0485953576b" numberOfConsumers="${kafka.Consumers.personSubject}" queueName="post_personSubject_Q" config-ref="personSubject_VM_configure" transactionalAction="ALWAYS_BEGIN" timeoutUnit="MILLISECONDS">
+			<reconnect-forever />
+		
+</vm:listener>
+		<logger level="DEBUG" doc:name="log Start" doc:id="d0d8a2a4-e5d5-4f94-98b0-672f6cf5024c" message='#[flow.name] Started correlation:#[correlationId default ""]]' category="global.meus"/>
+		<tracking:custom-event doc:name="Custom Business Event" doc:id="d75d84d1-7a59-4ad0-8381-210e6b35cc7f" event-name="post-person-subject">
+			<tracking:meta-data key="personSubjectId" value="#[payload.personSubjectId]" />
+			<tracking:meta-data key="personNameElement" value="#[payload.personNameElement]" />
+			<tracking:meta-data key="status" value="#[payload.status]" />
+		</tracking:custom-event>
+		<ee:transform doc:name="Update errorVars" doc:id="2cc1f1d4-9dcc-4b91-859a-1b3f2e3da28f" >
+			<ee:message >
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0 output application/java --- "Failed to insert record in DB."]]></ee:set-variable>
+				<ee:set-variable
+					variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "post-personSubject-api" ]]></ee:set-variable>
+				<ee:set-variable
+					variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "108" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "CouchBase"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 500]]></ee:set-variable>
+
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="create insert statement" doc:id="7145407d-e765-4c0a-b631-fbeb0d468479" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/x-www-form-urlencoded
+---
+{
+	"statement" : "INSERT INTO " ++ p('db.bucket') ++  
+   " (KEY, VALUE) VALUES('" ++
+   	(payload.personSubjectId) ++ 
+   	"'," ++
+   	(write(payload,'application/json')) ++
+   	")  RETURNING META().id as docid, *;"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<set-variable value="#[200]" doc:name="set http response" doc:id="9fd9ad06-7646-4885-b846-1e4656fdc37f" variableName="resultInfoHTTPStatus"/>
+		<ee:transform doc:name="update resultinfo" doc:id="19cad09d-c976-42d1-b2b7-b9492f46051f" >
+			<ee:message >
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0 output application/java --- "Failed to create event data."]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "post-personSubject-api" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "217" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "mulesoft"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 500]]></ee:set-variable>
+
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="Flow Reference - cbCRUD" doc:id="63b45c25-3da9-40bf-8945-e30560da2e9d" name="dbCRUD" />
+		<ee:transform doc:name="create Event Payload" doc:id="dbc4a707-b944-4503-b40c-48b02c3b05cc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	eventContext: {
+		eventName: "personSubjectCreated",
+		eventId: uuid(),
+		eventDatetime: payload.datetimeModified,
+	},
+	personSubjectId: vars.personSubjectId,
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<until-successful doc:name="Until Successful" doc:id="15bb5237-f164-4c91-9911-193db0fc3530" millisBetweenRetries="${kafka.publish.retryMillis}" maxRetries="${kafka.publish.retryCount}">
+			<kafka:producer doc:name="Publish Message" doc:id="45827ea9-7da1-4470-a029-69983f775338" config-ref="Apache_Kafka_Producer_configuration" topic="${topic}">
+			</kafka:producer>
+		</until-successful>
+		<error-handler >
+			<on-error-continue enableNotifications="true"
+				logException="true" doc:name="On Error Continue - Retry Exhausted"
+				doc:id="d6b5c3fc-4091-40f2-8ad9-0d443b4e5566"
+				type="VM:RETRY_EXHAUSTED">
+				<logger level="ERROR" doc:name="Logger"
+					doc:id="1741513e-d713-4817-9e13-6aa601864cd5"
+					message="exception occured and creating support ticket  "
+					category="global.meus" />
+				<ee:transform doc:name="update resultInfo"
+					doc:id="502bd66b-1278-456d-bc0f-2c3a7f9cfd3a">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0
+output application/java
+---
+vars.resultInfoMessage default "" ++ " - "  ++ if (null == error.exception default "") " No exception information available."  else error.description default "" 
+]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0 output application/java ---"Unable to complete insert."]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "post-personSubject-api" ]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 400]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "106" ]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "db"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoImpact"><![CDATA[%dw 2.0 output application/java --- "medium"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoUrgency"><![CDATA[%dw 2.0 output application/java --- "high"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="support-ticket-globalFlow"
+					doc:id="2b4e7e1f-669c-4804-9c5f-efee75689d71"
+					name="support-ticket-globalFlow" />
+			</on-error-continue>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate - http timeout and connectivity issues, propogate to retry with VM transaction" doc:id="ea1d4afb-654a-4e55-bbf8-2f4dd7dc36a8" type="HTTP:CONNECTIVITY, HTTP:TIMEOUT">
+				<logger level="DEBUG" doc:name="Logger" doc:id="78fb5f0f-dfca-4d0e-89a2-93b3242823e3" message="HTTP error, throwing exception to retry VM transaction" category="global.meus" />
+			</on-error-propagate>
+			<on-error-continue enableNotifications="true"
+				logException="true" doc:name="On Error Continue"
+				doc:id="bdddc0be-de36-4f79-b942-5e2a022e021e" type="ANY">
+				<logger level="INFO" doc:name="Logger"
+					doc:id="9a9bc90d-92de-47de-9d69-b3172432c700"
+					message="exception occured  while creating record on Couchbase or Kafka and creating support ticket  " />
+				<ee:transform doc:name="update resultInfo"
+					doc:id="2ce6a3f8-1f03-4ad8-ae70-d90510a91f0d">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0
+output application/java
+---
+vars.resultInfoMessage default "" ++ " - "  ++ if (null == error.exception default "") " No exception information available."  else error.description default "" 
+++ "payload=" ++ payload as String ]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0 output application/java ---"Failed to write to VM."]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "post-personSubject-api" ]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 400]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "106" ]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "Mapping"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoImpact"><![CDATA[%dw 2.0 output application/java --- "medium"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoUrgency"><![CDATA[%dw 2.0 output application/java --- "low"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="support-ticket-globalFlow"
+					doc:id="ebd91cbe-8f23-4e71-9db1-e13269851bf2"
+					name="support-ticket-globalFlow" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="put-personSubject-Select-Query-Flow" doc:id="965260b7-02f8-4e06-b3a8-3f308fb9ed58" >
+		<logger level="DEBUG" doc:name="Log start" doc:id="8edf837e-d8ba-4fe9-8656-dc51e99b2898" message='#[flow.name] Started correlation:#[correlationId default ""]]' category="global.meus"/>
+		<ee:transform doc:name="Update error vars" doc:id="9e71ba19-f6a3-4877-ba82-44d5632bcd55" >
+			<ee:message >
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0 output application/java ---"Duplicate"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0 output application/java --- "Duplicate"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "put-personSubject-api" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 400]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "107" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "Validation"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoImpact"><![CDATA[%dw 2.0 output application/java --- "low"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoUrgency"><![CDATA[%dw 2.0 output application/java --- "low"]]></ee:set-variable>
+
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="originalpayload, personSubjectId" doc:id="155f66c5-3577-4b94-9b19-8642c3fa3661">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="originalpayload"><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-variable>
+				<ee:set-variable variableName="personSubjectId" ><![CDATA[attributes.uriParams.'personSubjectId']]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Select Query" doc:id="710ff8e6-749d-45a5-b1c8-3ef64658e5c7">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/x-www-form-urlencoded
+---
+{
+	"statement" : "SELECT * FROM  " ++ p('db.bucket') ++  
+	" WHERE kind = '"++ p('db.kind') ++"' and kindVersion = '"++ p('db.kindVersion') ++"'"++
+    (if ((vars.personSubjectId != null) and (vars.personSubjectId != '')) ((" and personSubjectId = '") ++ (vars.personSubjectId) ++ ("'")) else (""))
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="Excute Select" doc:id="349f0114-e327-4fce-a9fc-daaf9f440dbe" name="dbSelect" />
+		<ee:transform doc:name="Transform Message" doc:id="0866da3e-c258-4002-8b15-d0c54d57ffcb" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="personSubjectResp" ><![CDATA[%dw 2.0
+output application/json
+---
+payload.results]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Create response" doc:id="445ce16d-95ad-40ae-b18c-4b4adfa123c8">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+personSubjectGet1: payload.results[p('db.bucket')] map (item1, value) -> {
+	personSubjectId: item1.personSubjectId,
+	mediaId: item1.mediaId,
+	contentURL: vars.mediaPayload.contentURL,
+	status: item1.status,
+	description: item1.description,
+	datetimeCreated: item1.datetimeCreated,
+	datetimeModified: item1.datetimeModified,
+	languageCode: item1.languageCode,
+	languageName: item1.languageName,
+	personNameElement: item1.personNameElement map (item2,index) -> {
+		personNameElementId: item2.personNameElementId,
+		surName: item2.surName,
+		restOfName: item2.restOfName,
+		startDate: item2.startDate,
+		endDate: item2.endDate
+	}
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="DB payload" doc:id="80320bcb-8666-47fa-87f0-9b8bc0cdab80">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+var response = payload.personSubjectGet1[0]
+---
+{
+	"personSubjectId": response.personSubjectId,
+	"kind": "personSubject",
+	"mediaId": vars.originalpayload.mediaId,
+	"contentURL": response.contentURL,
+	"status": response.status,
+	"description": vars.originalpayload.description,
+	"datetimeCreated": response.datetimeCreated,
+	"datetimeModified": now(),
+	"languageCode":vars.originalpayload.languageCode,
+	"languageName": vars.originalpayload.languageName,
+	"personNameElement": vars.originalpayload.personNameElement map (index, value) -> {
+		personNameElementId: response.personNameElement[value].personNameElementId,
+		surName: index.surName,
+		restOfName: index.restOfName,
+		startDate: index.startDate,
+		endDate: index.endDate
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="status check" doc:id="5099b2a5-2cb7-4d1f-9443-cac67f9fc5e4" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="status" ><![CDATA[%dw 2.0
+output application/java
+---
+payload.status]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<choice doc:name="Choice" doc:id="cddcb16d-b784-4cbe-8449-8a1723f0a381">
+			<when expression="#[vars.status == 'pending']">
+				<logger level="DEBUG" doc:name="Logger" doc:id="d5db3946-86bb-49c2-b60e-a030cc322be0" message="put  status is  pending so not updated    #[payload]" category="global.meus"/>
+				<ee:transform doc:name="Updated resultInfo" doc:id="a76ca8e5-10e6-4997-abb5-f26c81347514">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+				<ee:set-variable variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "216" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoImpact"><![CDATA[%dw 2.0 output application/java --- "low"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoUrgency"><![CDATA[%dw 2.0 output application/java --- "low"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0 output application/java ---"Already exists."]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0 output application/java --- "Entity already exists"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 403]]></ee:set-variable>
+			
+</ee:variables>
+				</ee:transform>
+				<set-variable value="#[423]" doc:name="set http status" doc:id="509e87b7-b865-4894-bdcf-adc0f0479531" variableName="resultInfoHTTPStatus" />
+				<ee:transform doc:name="create response" doc:id="f74e5aff-eb36-478f-a56f-58ec974153e0">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+ message: " Waiting For Moderation "	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			
+</when>
+			<otherwise>
+				<logger level="DEBUG" doc:name="Logger" doc:id="6bc658c4-96d3-470d-b935-da7b06425378" message="put  status is  not pending  continueing   #[payload]" category="global.meus"/>
+				<ee:transform doc:name="update resultInfo" doc:id="b6f2c1d4-7ec3-413d-ba3a-e8529c758ccd">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+				<ee:set-variable variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0 output application/java ---"Unable to process request"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0 output application/java --- "Failed to write to VM"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "108" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "Technical"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoImpact"><![CDATA[%dw 2.0 output application/java --- "medium"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 500]]></ee:set-variable>
+
+			</ee:variables>
+				</ee:transform>
+				<ee:transform doc:name="payload" doc:id="bcd9dd3e-53d0-4d08-ae2d-bee0251881f6" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="32c1368a-e9bb-496b-a920-5c786f08f7d8" message="))))))))))))) #[payload]"/>
+				<vm:publish queueName="put_personSubject_Q" doc:name="Publish" doc:id="f6ae1db3-7a8a-4851-94f8-3f8036598ea5" config-ref="personSubject_VM_configure" sendCorrelationId="ALWAYS">
+					<reconnect-forever />
+				</vm:publish>
+				<set-variable value="#[200]" doc:name="Set Variable" doc:id="2bf2cc3c-0434-461f-8443-a9e02bf5b68d" variableName="resultInfoHTTPStatus"/>
+				<ee:transform doc:name="updated PersonSubbjectId" doc:id="86b3b233-7d04-42a9-91e9-70b14417a93c" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	id: vars.personSubjectId
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			
+</otherwise>
+		</choice>
+		<flow-ref doc:name="Flow Reference-responceHtppststus" doc:id="1c906721-6bc0-47a7-8774-7fadc410bcee" name="set-http-response-statusCode" />
+		<logger level="DEBUG" doc:name="Log end" doc:id="c0317b96-45e3-46ea-bc82-33e1f6aa4d6a" message="  #[flow.name] Ended." category="global.meus"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true"
+				logException="true" doc:name="On Error Continue"
+				doc:id="941770d0-2562-4a6c-a7d6-7405e74db390" type="ANY">
+				<logger level="ERROR" doc:name="Logger"
+					doc:id="6f162640-d9e7-4b9e-b514-9caa004276e5"
+					message="exception occured and creating support ticket  "
+					category="global.meus" />
+				<ee:transform doc:name="update resultInfo"
+					doc:id="ff9ada1a-8f11-4cb6-8dd9-6b4647d1e2d2">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0
+output application/java
+---
+vars.resultInfoMessage default "" ++ " - "  ++ if (null == error.exception default "") " No exception information available."  else error.description default "" 
+]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="support-ticket-globalFlow"
+					doc:id="cdbe7957-dc10-4e90-8a9c-c07f9ccce4e0"
+					name="support-ticket-globalFlow" />
+				<flow-ref doc:name="set response statusCode"
+					doc:id="97c3d8ca-60f5-445a-a703-5ae7948e3835"
+					name="set-http-response-statusCode" />
+				<flow-ref doc:name="set-response-payload"
+					doc:id="ea7f8cfc-85cb-422b-b44a-36ef0f9cee1c"
+					name="set-response-payload" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="put-personSubject-Flow" doc:id="e957bc3e-a314-4a9a-96fe-0ebfa4f0da62" >
+		<vm:listener queueName="put_personSubject_Q" doc:name="Listener" doc:id="27e0bd15-4131-4d8b-b18e-46ff909b766a" numberOfConsumers="${vm.numConsumers.personSubject}" transactionalAction="ALWAYS_BEGIN" timeoutUnit="MILLISECONDS" config-ref="personSubject_VM_configure">
+			<redelivery-policy maxRedeliveryCount="${vm.redelivery.personSubject}"/>
+			<reconnect-forever />
+		</vm:listener>
+		<logger level="DEBUG" doc:name="Log start" doc:id="cee10e24-e2d2-4eb0-ae52-ab36c2b523b4" message='#[flow.name] Started correlation:#[correlationId default ""]]' category="global.meus"/>
+		<ee:transform doc:name="Transform Message" doc:id="417acfae-9688-4dca-b056-72c4eb6ef8aa" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Update error vars" doc:id="43f7c47c-dfc4-407c-af53-b9a1fb599b16">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0 output application/java --- "Failed to insert record in DB."]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "put-personSubject-api" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "108" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "CouchBase"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 500]]></ee:set-variable>
+
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="Update Statement" doc:id="73916c20-dd06-447f-9ac7-adfcebf5a910">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"statement" : "UPDATE" ++ "`" ++ p('db.bucket') ++ "`" ++  "SET " ++ p('db.bucket') ++ "=" ++ write(payload, "application/json")
+	++ " WHERE personSubjectId =  " ++ "'" ++ payload.personSubjectId ++ "'" ++ " RETURNING * "
+}]]></ee:set-payload>
+			</ee:message>
+			<ee:variables>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="Flow Reference-dbCRUD" doc:id="3c5f830b-cad2-4e4c-88e8-9eb4429cba96" name="dbCRUD" />
+		<set-variable value="#[200]" doc:name="Set result http status" doc:id="f35148d1-c332-4511-8e44-5b57dc70f774" variableName="resultInfoHTTPStatus" />
+		<ee:transform doc:name="update resultinfo" doc:id="7b21daf3-53c0-4939-abbe-4a74dd2abab5">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+				<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0 output application/java --- "Failed to create event data."]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "put-personSubject-api" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "217" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "mulesoft"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 500]]></ee:set-variable>
+
+			</ee:variables>
+				</ee:transform>
+		<logger level="DEBUG" doc:name="Logger" doc:id="dca106bc-db0b-4494-8944-9d976372bcf2" message="&gt;&gt;&gt;&gt;&gt;&gt;&gt; #[payload]" category="global.meus"/>
+		<ee:transform doc:name="create event payload" doc:id="406af35b-6622-410a-81f8-766554635135">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	eventContext: {
+		eventName: "personSubjectUpdated",
+		eventId: uuid(),
+		eventDatetime: payload.datetimeModified,
+	},
+	personSubjectId: vars.personSubjectId
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="eventMsg"><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+		<until-successful maxRetries="${kafka.publish.retryCount}" doc:name="Until Successful" doc:id="ce83f47a-b25d-40aa-b78d-00370ba0c60f" millisBetweenRetries="${kafka.publish.retryMillis}">
+			<kafka:producer doc:name="Publish Message" doc:id="61c7f3d3-b4fe-4652-8371-84544ab4889a" config-ref="Apache_Kafka_Producer_configuration" topic="${topic}"/>
+		</until-successful>
+		<logger level="DEBUG" doc:name="Logger" doc:id="5604302d-bf27-4b47-91d3-1543f57dea89" message="#[payload]" category="global.meus"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue Retry_Exhausted" doc:id="8ff06ad4-3833-4b33-bd2f-dbc4fe1f120e" type="VM:RETRY_EXHAUSTED">
+				<logger level="INFO" doc:name="Logger" doc:id="2f5b66cf-996a-4052-81f9-ea935d334888" message="exception occured and creating support ticket  "/>
+				<ee:transform doc:name="update Resultinfo" doc:id="61d12bf0-7023-4247-9212-86dbd313eedf">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0
+output application/java
+---
+vars.resultInfoMessage default "" ++ " - "  ++ if (null == error.exception default "") " No exception information available."  else error.description default ""
+]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0 output application/java ---"Unable to complete insert."]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "post-personSubject-api" ]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 400]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "106" ]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "db"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoImpact"><![CDATA[%dw 2.0 output application/java --- "medium"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoUrgency"><![CDATA[%dw 2.0 output application/java --- "high"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="support-ticket-globalFlow" doc:id="04601d8e-7596-465c-8776-7b3d667b6af9" name="support-ticket-globalFlow"/>
+			</on-error-continue>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate - http timeout and connectivity issues, propogate to retry with VM transaction" doc:id="1694df88-ea0c-4829-bcb2-1f862576f8f9" type="HTTP:CONNECTIVITY, HTTP:TIMEOUT">
+				<logger level="DEBUG" doc:name="Logger" doc:id="e32097ac-4676-4a3d-a0c2-fff0c4d79240" message="HTTP error, throwing exception to retry VM transaction" category="global.meus"/>
+			</on-error-propagate>
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="b4b3d18e-5577-452d-98f7-48b39c9130d9" type="ANY">
+				<logger level="DEBUG" doc:name="Logger" doc:id="45513b40-e223-4d89-88e9-940aa6e3cd51" message="exception occured  while creating record on Couchbase or Kafka and creating support tick"/>
+				<ee:transform doc:name="update Reslutinfo" doc:id="8fdbf57f-59ed-4b3e-93fb-68fa89f2be75">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0
+output application/java
+---
+vars.resultInfoMessage default "" ++ " - "  ++ if (null == error.exception default "") " No exception information available."  else error.description default "" 
+++ "payload=" ++ payload as String ]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0 output application/java ---"Failed to write to VM."]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "post-personSubject-api" ]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 400]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "106" ]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "Mapping"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoImpact"><![CDATA[%dw 2.0 output application/java --- "medium"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoUrgency"><![CDATA[%dw 2.0 output application/java --- "low"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="support-ticket-globalFlow" doc:id="59f59e84-f4bf-47d3-a316-3dbd6f515033" name="support-ticket-globalFlow"/>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<flow name="delete-personSubject-Flow" doc:id="7994effe-e3d9-43e8-85dc-ad9d6418527c" >
+		<logger level="DEBUG" doc:name="Log start" doc:id="f4d29d23-a747-4a30-8cce-d870aa38d7ff" message='#[flow.name] Started correlation:#[correlationId default ""]]' category="global.meus"/>
+		<ee:transform doc:name="PersonSubjectId" doc:id="8edfb2f5-739c-4fd6-81f0-2e9d41172b94" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[attributes.uriParams.'personSubjectId']]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<ee:transform doc:name="Update error vars" doc:id="e619f433-3d1e-49f0-9c4d-4bd907328df1">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0 output application/java --- "Failed to insert record in DB."]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "put-personSubject-api" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "108" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "CouchBase"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 500]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<ee:transform doc:name="delete statement" doc:id="7635af93-a059-4264-bef7-73fd346b6227">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/x-www-form-urlencoded
+---
+{
+	"statement" :  "DELETE FROM " ++ p('db.bucket') ++  
+   " WHERE meta().id = '" ++
+   	vars.personSubjectId ++ 
+   	"'"
+   	}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<flow-ref doc:name="Flow Reference-dbCRUD" doc:id="9a3afa63-7c53-4302-80b3-2fbb2c28a4fc" name="dbCRUD" />
+		<choice doc:name="Choice" doc:id="2b8a08ef-e037-4a52-a1f5-c95bc8e306a2" >
+			<when expression="#[isEmpty(payload.metrics.mutationCount)]">
+			<logger level="DEBUG" doc:name="Logger" doc:id="678254bc-35e1-4e06-9526-9de7fd545d65" category="global.meus" message="Metrics Value is empty"/>
+				<set-payload value='#[""]' doc:name="Set Payload" doc:id="b98ad112-000c-4415-94d3-5f8ab650c8a0" />
+				<set-variable value="#[404]" doc:name="set http response" doc:id="9d2e4797-f71f-4e6a-9901-d004bc86f3c7" variableName="resultInfoHTTPStatus"/>
+				<ee:transform doc:name="create response" doc:id="d9c9bfb7-10f8-4744-8cbf-1c3e79de491d">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+ message: " personSubject record already  deleted"	
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<logger level="DEBUG" doc:name="Logger" doc:id="0da2f04a-04b2-49f8-8a4d-913d98d2b824" message="Already Deleted" category="global.mesu"/>
+				<set-variable value="#[200]" doc:name="set http response" doc:id="2627f36c-99db-4b33-8bf6-16d35c4d7222" variableName="resultInfoHTTPStatus" />
+				<ee:transform doc:name="update resultinfo" doc:id="cb3e1145-e0a3-41ee-95cc-b9ed106c3f31">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0 output application/java --- "Failed to create event data."]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "delete-personSubject-api" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "217" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "mulesoft"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 500]]></ee:set-variable>
+
+			</ee:variables>
+		</ee:transform>
+				<ee:transform doc:name="create event payload" doc:id="ed75afed-5d1c-4d46-b16b-f48dbe8e93ec">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	eventContext: {
+		eventName: "personSubjectDeleted",
+		eventId: uuid(),
+		eventDatetime: payload.datetimeModified,
+	},
+	personSubjectId: vars.personSubjectId
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<until-successful doc:name="Until Successful" doc:id="66fc4e41-3098-4962-aeee-0c3105b89c95" millisBetweenRetries="${kafka.publish.retryMillis}" maxRetries="${kafka.publish.retryCount}">
+					<kafka:producer doc:name="Publish Message" doc:id="3c6b7f20-6b48-4d28-97d1-e918fece4afa" config-ref="Apache_Kafka_Producer_configuration" topic="${topic}"/>
+				</until-successful>
+			
+
+</otherwise>
+		</choice>
+		<flow-ref doc:name="Flow Reference-set-http-response-statusCode" doc:id="96103b29-8025-4ae8-a024-9fcb65b8573c" name="set-http-response-statusCode"/>
+		<logger level="DEBUG" doc:name="Log end" doc:id="ab97180e-9c4b-4ae8-a29e-edaedb9e95e8" message="#[flow.name] ended" category="global.news" />
+		<error-handler >
+			<on-error-continue enableNotifications="true"
+				logException="true" doc:name="On Error Continue - Retry Exhausted"
+				doc:id="a35377fe-58a0-4835-b161-e08ab6595ab1"
+				type="VM:RETRY_EXHAUSTED">
+				<logger level="ERROR" doc:name="Logger"
+					doc:id="7fb4b173-ae16-45bb-a5dc-696628f43fcb"
+					message="exception occured and creating support ticket  "
+					category="global.meus" />
+				<ee:transform doc:name="update resultInfo"
+					doc:id="6e025768-b791-4dce-ae78-9c46254c648c">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0
+output application/java
+---
+vars.resultInfoMessage default "" ++ " - "  ++ if (null == error.exception default "") " No exception information available."  else error.description default "" 
+]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0 output application/java ---"Unable to complete insert."]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "post-personSubject-api" ]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 400]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "106" ]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "db"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoImpact"><![CDATA[%dw 2.0 output application/java --- "medium"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoUrgency"><![CDATA[%dw 2.0 output application/java --- "high"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="support-ticket-globalFlow"
+					doc:id="a3f1f576-0a45-4ef1-854b-f691b713adb3"
+					name="support-ticket-globalFlow" />
+			</on-error-continue>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate - http timeout and connectivity issues, propogate to retry with VM transaction" doc:id="85b42895-ab0b-4c1b-83a2-0f484239d9b3" type="HTTP:CONNECTIVITY, HTTP:TIMEOUT">
+				<logger level="DEBUG" doc:name="Logger" doc:id="b3551dca-eb92-47fe-b151-29b2f197d8d4" message="HTTP error, throwing exception to retry VM transaction" category="global.meus" />
+			</on-error-propagate>
+			<on-error-continue enableNotifications="true"
+				logException="true" doc:name="On Error Continue"
+				doc:id="20106657-b555-49b0-9420-d407a9f472f5" type="ANY">
+				<logger level="INFO" doc:name="Logger"
+					doc:id="f9d405d8-2f9f-4bbd-8f51-ce33e9ed68e2"
+					message="exception occured  while creating record on Couchbase or Kafka and creating support ticket  " />
+				<ee:transform doc:name="update resultInfo"
+					doc:id="47b15369-9dbe-4d3a-8341-ec661074d66b">
+					<ee:message>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0
+output application/java
+---
+vars.resultInfoMessage default "" ++ " - "  ++ if (null == error.exception default "") " No exception information available."  else error.description default "" 
+++ "payload=" ++ payload as String ]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0 output application/java ---"Failed to write to VM."]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "post-personSubject-api" ]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 400]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "106" ]]></ee:set-variable>
+						<ee:set-variable
+							variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "Mapping"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoImpact"><![CDATA[%dw 2.0 output application/java --- "medium"]]></ee:set-variable>
+						<ee:set-variable variableName="resultInfoUrgency"><![CDATA[%dw 2.0 output application/java --- "low"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				<flow-ref doc:name="support-ticket-globalFlow"
+					doc:id="2c5ac15b-eaf7-402c-ba24-4fc9add7dc18"
+					name="support-ticket-globalFlow" />
+			</on-error-continue>
+		</error-handler>
+	</flow>
+	<sub-flow name="get-media-Flow" doc:id="2ddd58ef-47ff-4fd7-9311-d94d10651201" >
+		<set-variable value="658757" doc:name="Set Variable" doc:id="c7e36e0d-08d8-4bb6-967a-03e502762edf" variableName="media_id"/>
+		<until-successful maxRetries="${media.retry}" doc:name="Until Successful" doc:id="3d8cf090-c6b6-4d71-ae03-11a2f314ab1e" millisBetweenRetries="${media.millisecondretry}">
+			<http:request method="GET" doc:name="Request" doc:id="0cc3445f-d87b-4ea3-a147-101d3ca4dd4a" url="${https.media.host}" sendCorrelationId="ALWAYS" config-ref="Media_HTTPS_Request_configuration">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"client_secret" : p('client.secret'),
+	"client_id" : p('client.id'),
+	
+}]]]></http:headers>
+			<http:uri-params><![CDATA[#[output application/java
+---
+{
+	"mediaId" : vars.media_id
+}]]]></http:uri-params>
+		</http:request>
+		</until-successful>
+		<ee:transform doc:name="media content" doc:id="898d7f39-0a56-4a5e-a013-62427af83ba5" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="mediaPayload" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	contentURL: payload.mediaContent.contentURL
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+	</sub-flow>
+</mule>

@@ -1,0 +1,21 @@
+#%RAML 1.0 DataType
+displayName: Person Subject
+
+type: object
+properties:
+  personNameElement:
+    description: The name of the person, which could have more than one entry for name changes
+    required: true
+    type: array
+    items: !include personNameElement-create.raml
+  mediaId:
+    required: false
+    type: string
+  description:
+    description: Titles, locations, or other info to identify the Person
+    required: true
+    type: string
+  languageCode:
+    required: true
+    default: "ENU"
+    type: string

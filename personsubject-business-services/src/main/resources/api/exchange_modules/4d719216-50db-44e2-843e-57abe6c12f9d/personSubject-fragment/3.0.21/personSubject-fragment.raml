@@ -1,0 +1,113 @@
+#%RAML 1.0
+baseUri: https://anypoint.mulesoft.com/mocking/api/v1/links/a0b5cc77-29ac-4d1d-b5cc-733bc5701cee/ # baseUri: https://anypoint.mulesoft.com/mocking/api/v3/links/a0b5cc77-29ac-4d1d-b5cc-733bc5701cee/ # baseUri: https://anypoint.mulesoft.com/mocking/api/v3/links/a0b5cc77-29ac-4d1d-b5cc-733bc5701cee/
+title: Person Subject Fragment
+mediaType: application/json
+version: v3
+
+uses: 
+  languageEnum: exchange_modules/4d719216-50db-44e2-843e-57abe6c12f9d/truenewsshared/3.0.9/libraries/language-enum.raml
+  personSubjectLib: libraries/personSubjectLib.raml
+
+traits: 
+  secured: !include exchange_modules/4d719216-50db-44e2-843e-57abe6c12f9d/truenewsshared/3.0.9/traits/secured.raml
+  default-error-responses: !include exchange_modules/4d719216-50db-44e2-843e-57abe6c12f9d/truenewsshared/3.0.9/traits/default-error-responses.raml
+  default-put-response-singleId: !include exchange_modules/4d719216-50db-44e2-843e-57abe6c12f9d/truenewsshared/3.0.9/traits/post-success-response-singleId.raml
+  default-post-response-singleId: !include exchange_modules/4d719216-50db-44e2-843e-57abe6c12f9d/truenewsshared/3.0.9/traits/post-success-response-singleId.raml
+  default-delete-response: !include exchange_modules/4d719216-50db-44e2-843e-57abe6c12f9d/truenewsshared/3.0.9/traits/delete-success-response.raml
+  paginated: !include exchange_modules/4d719216-50db-44e2-843e-57abe6c12f9d/truenewsshared/3.0.9/traits/pagination-params.raml
+
+resourceTypes:  
+  functions-resource: !include exchange_modules/4d719216-50db-44e2-843e-57abe6c12f9d/truenewsshared/3.0.9/resourceTypes/functions.raml
+
+ 
+/EVENTS:
+  get:
+    body:
+      properties:
+        personSubjectEvent: 
+          type: !include events/personSubject-event.raml
+          
+
+/personSubject:
+  is: ["secured","default-error-responses"]
+  description: A Person Subject is a representation of a person, attached to Stories, Facts and Events and used in Search definitions
+  get:
+    is: ["paginated"]
+    queryParameters:
+      status:
+        required: true
+        default: "active"
+        type: personSubjectLib.status        
+      detail:
+        type: string
+        required: false
+        enum: ["normal","extended"]
+        default: "normal"
+      page:
+        description: For pagination
+        required: false
+        type: integer    
+    description: Retrieve a number of matching Person Subjects
+    responses:
+      200:
+        body:
+          application/json:
+            type: array
+            items: !include datatypes/personSubject-get.raml
+            examples: !include examples/personSubject-example-get-multiple.raml
+  post:
+    is: ["default-post-response-singleId"]
+    description: Create a Person Subject
+    body:
+      application/json:
+        type: !include datatypes/personSubject-create.raml  
+        examples: !include examples/personSubject-example-create.raml  
+  /trending:
+    description: Gets list of trending items, by minute
+    get:
+      queryParameters:
+        startDateTime: 
+          description: Beginning date/time to retrieve view counts
+          required: false
+          type: datetime
+        endDateTime: 
+          description: Ending date/time to retrieve view counts
+          required: false
+          type: datetime
+      responses:
+        200:
+          body:
+            application/json:
+              type: array
+              items: !include datatypes/personSubjectPopular-get.raml
+              examples: !include examples/personSubjectsPopular-get.raml
+  /{personSubjectId}:
+    is: ["secured","default-error-responses"]
+    description: Retrieve a specific matching Person Subject
+    get:
+      is: ["paginated"]
+      queryParameters:
+        status:
+          required: true
+          default: "active"
+          type: personSubjectLib.status        
+      responses:
+        200:
+          body: 
+            application/json:
+              type: !include datatypes/personSubject-get.raml
+              examples: !include examples/personSubject-example-get-single.raml
+    put:
+      is: ["default-put-response-singleId"]
+      description: Update a specific Person Subject
+      body:
+          application/json:
+            type: !include datatypes/personSubject-create.raml
+            examples: !include examples/personSubject-example-create.raml
+    delete:
+      is: ["default-delete-response"]
+      description: Deletes a PersonSubject definition
+/functions:
+  is: ["secured"]
+  type:
+    functions-resource:

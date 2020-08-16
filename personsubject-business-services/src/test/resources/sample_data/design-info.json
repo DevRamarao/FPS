@@ -1,0 +1,8 @@
+{
+  "sampleData": {
+    "14183f8d-cf5c-4b8c-9228-2628148aa75b": {
+      "payload": "sample_data/unknown.dwl",
+      "attributes": "sample_data/vmmessageattributes.dwl"
+    }
+  }
+}

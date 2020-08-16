@@ -1,0 +1,18 @@
+#%RAML 1.0 Library 
+usage: This represents the fields on each table capturing the datetime and user info for a given object.
+types:
+  auditData:
+    type: object
+    properties:
+      dateCreatedUserid:
+        description: the user that first created the object
+        type: string      
+      dateCreatedTimestamp:
+        type: datetime
+        description: Audit Data
+      dateModifiedUserid:
+        description: the user that last modified the object
+        type: string
+      dateModifiedTimestamp:
+        description: last datetime the object was changed
+        type: datetime

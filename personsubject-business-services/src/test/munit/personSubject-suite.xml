@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="personSubject-suite.xml" />
+	<munit:test name="get-personSuject-by-Id-Flow-test1" doc:id="c417c5df-ac15-4a83-96bc-74521b97867b" >
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock Flow Reference-get-mediaFlow" doc:id="34cde7c8-0faa-4eec-9f37-ab8f064c9d8f" processor="flow-ref">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="6949aa87-9f31-418d-bc16-ad0665acc152" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:then-return >
+					<munit-tools:payload value="#[output application/json --- readUrl('classpath://getpersonSujectbyIdFlowtest1\mock_payload.dwl')]" mediaType="application/json" encoding="UTF-8" />
+					<munit-tools:attributes value="#[readUrl('classpath://getpersonSujectbyIdFlowtest1\mock_attributes.dwl')]" />
+					<munit-tools:variables >
+						<munit-tools:variable key="resultInfoErrorType" value="#[output application/java --- readUrl('classpath://getpersonSujectbyIdFlowtest1\mock_variable_.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="resultInfoRequestorResource" value="#[output application/java --- readUrl('classpath://getpersonSujectbyIdFlowtest1\mock_variable_1.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="outboundHeaders" value="#[readUrl('classpath://getpersonSujectbyIdFlowtest1\mock_variable_2.dwl')]" />
+						<munit-tools:variable key="createResponse" value="#[output application/java --- readUrl('classpath://getpersonSujectbyIdFlowtest1\mock_variable_3.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="personSubjectId" value="#[output application/java --- readUrl('classpath://getpersonSujectbyIdFlowtest1\mock_variable_4.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="resultInfoReturnStatusDescription" value="#[output application/java --- readUrl('classpath://getpersonSujectbyIdFlowtest1\mock_variable_5.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="personSubjectResp" value="#[output application/json --- readUrl('classpath://getpersonSujectbyIdFlowtest1\mock_variable_6.dwl')]" mediaType="application/json" encoding="UTF-8" />
+						<munit-tools:variable key="mediaPayload" value="#[output application/java --- readUrl('classpath://getpersonSujectbyIdFlowtest1\mock_variable_7.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="resultInfoHTTPStatus" value="#[output application/java --- readUrl('classpath://getpersonSujectbyIdFlowtest1\mock_variable_8.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="resultInfoMessage" value="#[output application/java --- readUrl('classpath://getpersonSujectbyIdFlowtest1\mock_variable_9.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="resultInfoReturnStatusCode" value="#[output application/java --- readUrl('classpath://getpersonSujectbyIdFlowtest1\mock_variable_10.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="resultInfoImpact" value="#[output application/java --- readUrl('classpath://getpersonSujectbyIdFlowtest1\mock_variable_11.dwl')]" mediaType="application/java" encoding="UTF-8" />
+						<munit-tools:variable key="media_id" value="#[readUrl('classpath://getpersonSujectbyIdFlowtest1\mock_variable_12.dwl')]" encoding="UTF-8" />
+						<munit-tools:variable key="resultInfoUrgency" value="#[output application/java --- readUrl('classpath://getpersonSujectbyIdFlowtest1\mock_variable_13.dwl')]" mediaType="application/java" encoding="UTF-8" />
+					</munit-tools:variables>
+				</munit-tools:then-return>
+			</munit-tools:mock-when>
+			<munit-tools:spy doc:name="Spy DB payload" doc:id="66914e8c-f460-4eae-b06a-10bc1579cb6e" processor="ee:transform">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="a17f06d8-5abc-4bf3-90f5-2d6859d5aa81" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+				<munit-tools:before-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="0d737110-4d59-430c-bfa5-bbbab165bcd0" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import getpersonSujectbyIdFlowtest1::spy_assert_payload
+---
+spy_assert_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:before-call>
+				<munit-tools:after-call >
+					<munit-tools:assert doc:name="Assert payload" doc:id="075515b2-1be5-4684-8d23-32b30a879b90" message="The payload does not match">
+						<munit-tools:that ><![CDATA[#[%dw 2.0
+import getpersonSujectbyIdFlowtest1::spy_assert_payload1
+---
+spy_assert_payload1::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+					</munit-tools:assert>
+				</munit-tools:after-call>
+			</munit-tools:spy>
+			<munit:set-event doc:name="Set Input" doc:id="51ee88ac-cc6b-4aa3-a6bd-9f856c855f5c" >
+				<munit:payload value="#[readUrl('classpath://getpersonSujectbyIdFlowtest1\set-event_payload.dwl')]" encoding="UTF-8" />
+				<munit:attributes value="#[readUrl('classpath://getpersonSujectbyIdFlowtest1\set-event_attributes.dwl')]" />
+				<munit:variables >
+					<munit:variable key="outboundHeaders" value="#[readUrl('classpath://getpersonSujectbyIdFlowtest1\set-event_variable_.dwl')]" />
+				</munit:variables>
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to get-personSuject-by-Id-Flow" doc:id="065446bb-4029-450b-bb40-53f88e7902d3" name="get-personSuject-by-Id-Flow"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert payload" doc:id="70aa316a-33f9-4710-9c51-81c8b2ccba6a" message="The payload does not match">
+				<munit-tools:that ><![CDATA[#[%dw 2.0
+import getpersonSujectbyIdFlowtest1::assert_expression_payload
+---
+assert_expression_payload::main({payload: payload, attributes: attributes, vars: vars})]]]></munit-tools:that>
+			</munit-tools:assert>
+			<munit-tools:verify-call doc:name="Verify Logger" doc:id="6cf3d170-3bd9-413b-8faf-7a0908b8f689" processor="logger" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="ad5a1527-483b-4d92-85a6-27f1162b4112" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+			<munit-tools:verify-call doc:name="Verify DB payload" doc:id="1e595a51-fec2-43d8-af89-d1de998a2837" processor="ee:transform" times="1">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="a17f06d8-5abc-4bf3-90f5-2d6859d5aa81" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:verify-call>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>

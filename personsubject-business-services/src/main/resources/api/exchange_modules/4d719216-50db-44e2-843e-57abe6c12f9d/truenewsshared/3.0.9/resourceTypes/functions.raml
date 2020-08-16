@@ -1,0 +1,31 @@
+#%RAML 1.0 ResourceType
+  usage: This API is used by <<resourcePathName>>
+  description: API is used to functionality
+  get:
+    is: [secured]
+    queryParameters:
+        function:
+         type: string 
+        action:
+          type: string
+          enum: ["test","enable","disable"]
+    responses: 
+      200:
+        body:
+          application/json:
+            properties:
+              resultMessage:
+                type: string
+      500:
+        body:
+          application/json:
+            properties:
+              resultMessage:
+                type: string
+  options:
+    responses:
+      200:
+        body:
+          application/json:
+            type: array
+            items: string

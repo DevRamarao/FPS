@@ -1,0 +1,21 @@
+#%RAML 1.0
+title: True News Shared Fragment
+mediaType: application/json
+version: v3
+
+
+traits: 
+  secured: !include traits/secured.raml
+  default-error-responses: !include traits/default-error-responses.raml
+  default-put-response-singleId: !include traits/post-success-response-singleId.raml
+  default-post-response-singleId: !include traits/post-success-response-singleId.raml
+  default-delete-response: !include traits/delete-success-response.raml
+  paginated: !include traits/pagination-params.raml
+
+resourceTypes:
+  functions-resource:  !include /resourceTypes/functions.raml
+
+/functions:
+  is: ["secured"]
+  type:
+    functions-resource:

@@ -1,0 +1,15 @@
+#%RAML 1.0 DataType
+displayName: Popular
+type: object
+  
+properties:
+  entityId:
+    type: string
+  datetimeMinute:
+    displayName: "Date and time of given minute count"
+    required: true
+    type: datetime
+  viewCount:
+    displayName: "Number of times this entity has been viewed."
+    required: false
+    type: integer

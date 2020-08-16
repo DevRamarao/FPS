@@ -1,0 +1,33 @@
+#%RAML 1.0 DataType
+displayName: Person Subject
+
+type: object
+properties:
+  personSubjectId:
+    type: string
+  personNameElement:
+    description: The most current name of the person
+    required: false
+    type: array
+    items: !include personNameElement-get.raml
+  mediaId:
+    required: false
+    type: string
+  contentURL:
+    required: false
+    type: string
+  description:
+    type: string
+  status:
+    type: string
+  datetimeCreated:
+    required: false
+    type: datetime
+  datetimeModified:
+    required: false
+    type: datetime
+  languageCode:
+    type: string
+  languageName:
+    type: string
+

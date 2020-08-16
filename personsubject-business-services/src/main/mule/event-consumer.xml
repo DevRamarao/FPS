@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:kafka="http://www.mulesoft.org/schema/mule/kafka"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/kafka http://www.mulesoft.org/schema/mule/kafka/current/mule-kafka.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd">
+	<flow name="kafka-consumer-personSubject" doc:id="69483cdc-24d1-4139-9fed-36bb84673749" >
+		<kafka:consumer doc:name="Message Consumer" doc:id="b171d568-cbcb-47ed-af48-f7c9c24d809a" config-ref="Apache_Kafka_Consumer_configuration" topic="${topic}">
+			<redelivery-policy maxRedeliveryCount="${kafka.consume.retryCount}"/>
+		</kafka:consumer>
+		<logger level="INFO" doc:name="Logger" doc:id="99c34625-d692-452b-8937-d11acdec1557" message="&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;&amp;   consumed #[payload]"/>
+		<vm:publish queueName="personSubject_incoming" doc:name="Publish - send event" doc:id="9d0a15c8-4038-4f05-9f1c-2a871ae3132e" sendCorrelationId="ALWAYS" timeoutUnit="MILLISECONDS" config-ref="kafka_VM_Configure">
+			<reconnect-forever />
+		</vm:publish>
+	</flow>
+	<flow name="kafa-consumerFlow" doc:id="aa2f176a-7de2-46f8-9749-de55014a60a0" >
+		<vm:listener doc:name="Listener" doc:id="fb73d10b-5eea-4ff8-9305-f26adba84bae" queueName="personSubject_incoming" transactionalAction="ALWAYS_BEGIN" primaryNodeOnly="true" numberOfConsumers="${vm.numConsumers.personSubject}" timeoutUnit="MILLISECONDS" config-ref="kafka_VM_Configure">
+		</vm:listener>
+		<logger level="DEBUG" doc:name="process the event, throwing an error if needed, the example below throw 110 as an error that could be retried, failing the VM transaction and retrying" doc:id="51452c44-cb2b-49a5-ac09-7dd41d7d6341" />
+		<error-handler >
+			<on-error-continue enableNotifications="false" logException="true" doc:name="On Error Continue - redelivery exhausted" doc:id="04bb70be-a1c3-45d4-a37b-841ecb430dfe" type="REDELIVERY_EXHAUSTED">
+				<logger level="DEBUG" doc:name="Redelivery exhausted" doc:id="43a70bda-37e2-40d5-bd68-6e3a6f255aa2" message="Redelivery exhausted" category="global.meus"/>
+				<ee:transform doc:name="Set Error Message" doc:id="dbc8f01f-02a2-4388-af4c-74afdeabf6bb">
+						<ee:message>
+						</ee:message>
+								<ee:variables>
+				<ee:set-variable variableName="resultInfoRequestorResource"><![CDATA[%dw 2.0 output application/java --- "event-consumer" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoHTTPStatus"><![CDATA[%dw 2.0 output application/java --- 500]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusCode"><![CDATA[%dw 2.0 output application/java --- "211" ]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoErrorType"><![CDATA[%dw 2.0 output application/java --- "Technical"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoImpact"><![CDATA[%dw 2.0 output application/java --- "medium"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoUrgency"><![CDATA[%dw 2.0 output application/java --- "high"]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoReturnStatusDescription"><![CDATA[%dw 2.0 output application/java ---"Unable to process event."]]></ee:set-variable>
+				<ee:set-variable variableName="resultInfoMessage"><![CDATA[%dw 2.0 output application/java --- "VM Redelivery exhausted"]]></ee:set-variable>
+								</ee:variables>
+					</ee:transform>
+				<flow-ref doc:name="support-ticket" doc:id="ad637529-7111-4a3d-8c60-f1f431ba31b0" name="support-ticket-globalFlow"/>
+				<flow-ref doc:name="set-response-payload" doc:id="88e72caf-e4b9-4431-be25-f2a772f990a0" name="set-response-payload"/>
+			</on-error-continue>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate - errorCode 110" doc:id="f3eb5510-7a2b-47f3-a101-1e379563c738" when='#[vars.resultInfoReturnStatusCode == "110"]'>
+				<logger level="DEBUG" doc:name="exception occured propagated  VM to retry" doc:id="0a9b86b8-1732-446b-9058-4f0e84aa10bd" message="exception occured errorCode: #[vars.errorInfoErrorCode] propagated to get the vm to retry" category="globa.meus"/>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

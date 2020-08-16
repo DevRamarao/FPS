@@ -1,0 +1,35 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="personSubjectId" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="inputP" format="json">
+      <types:shape format="weave" example="examples/inputJsonforPublish.json"><![CDATA[%dw 2.0
+
+type inputP = {|
+  personSubjectId: String, 
+  kind: String, 
+  kindVersion: String, 
+  personNameElement: Array<{|    surName: String,     restOfName: String,     startDate: String,     endDate: String,     personNameElementId: String  |}>, 
+  mediaId: String, 
+  languageCode: String, 
+  languageName: Null, 
+  status: String, 
+  datetimeCreated: String, 
+  CreatedUserid: String, 
+  personSubjectDescription: String
+|} {"example": "{\\\"personSubjectId\\\":\\\"adde7788-ee4c-4bcc-ab18-7b73786262d5\\\",\\\"kind\\\":\\\"personSubject\\\",\\\"kindVersion\\\":\\\"3.0.0\\\",\\\"personNameElement\\\":[{\\\"surName\\\":\\\"Kllk\\\",\\\"restOfName\\\":\\\"Sulkkjlivan\\\",\\\"startDate\\\":\\\"2016-01-01\\\",\\\"endDate\\\":\\\"2018-01-01\\\",\\\"personNameElementId\\\":\\\"4e3642b8-6270-4e6c-8a7b-159896152b3f\\\"},{\\\"surName\\\":\\\"Kjkjkjirk\\\",\\\"restOfName\\\":\\\"Sulnkkilivan\\\",\\\"endDate\\\":\\\"2016-01-01\\\",\\\"personNameElementId\\\":\\\"9424274d-4518-46a3-80b9-a3ebf7e923b2\\\"}],\\\"mediaId\\\":\\\"\\\",\\\"languageCode\\\":\\\"ENU\\\",\\\"languageName\\\":null,\\\"status\\\":\\\"pending\\\",\\\"datetimeCreated\\\":\\\"2020-05-24T23:49:38.06+05:30\\\",\\\"CreatedUserid\\\":\\\"mulesoft-user\\\",\\\"personSubjectDescription\\\":\\\"A guy from Mic\\\"}"}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#eec26f34-b412-466f-95bc-863ffe3919ab"/>
+  <types:enrichment select="#80e9b18f-f99f-44c5-94df-e3eac3057777"/>
+  <types:enrichment select="#7b21daf3-53c0-4939-abbe-4a74dd2abab5"/>
+  <types:enrichment select="#61d12bf0-7023-4247-9212-86dbd313eedf"/>
+  <types:enrichment select="#68173780-7e05-4a6b-bcd9-fee08be9e1a8"/>
+  <types:enrichment select="#73916c20-dd06-447f-9ac7-adfcebf5a910"/>
+  <types:enrichment select="#45827ea9-7da1-4470-a029-69983f775338"/>
+</types:mule>
